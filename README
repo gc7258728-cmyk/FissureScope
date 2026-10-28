@@ -1,0 +1,293 @@
+FISSURESCOPE 2.1 - ATELIER D'OBSERVATION DES BATIMENTS
+================================================
+
+Suivre les observations de fissures dans plusieurs batiments, annoter une vue,
+consigner les mesures, comparer les photos et etudier l'incertitude.
+Aucune connexion, aucun service payant, aucune cle API.
+Cette application ne diagnostique ni la cause, ni la gravite, ni la securite
+d'un batiment. Elle ne mesure pas une fissure automatiquement sur une photo.
+
+INSTALLATION WINDOWS / VS CODE
+------------------------------
+Python 3.11 a 3.14 recommande. Ouvrir ce dossier dans VS Code, puis le terminal.
+Utiliser l'interpreteur Python installe, ou un environnement virtuel cree HORS
+de ce dossier afin de conserver les trois fichiers du dossier livre :
+
+  python -m pip install -r requirement.text
+  python -m streamlit run app.py
+
+Le lancement simple ci-dessus conserve les themes natifs clair et sombre.
+Pour harmoniser aussi leurs couleurs natives, commande facultative sur UNE ligne :
+  python -m streamlit run app.py --theme.light.primaryColor "#D94335" --theme.light.backgroundColor "#F5F3EE" --theme.light.secondaryBackgroundColor "#E7EEEA" --theme.light.textColor "#202827" --theme.dark.primaryColor "#EF796B" --theme.dark.backgroundColor "#141A20" --theme.dark.secondaryBackgroundColor "#25343D" --theme.dark.textColor "#F1EFE9"
+Eviter de configurer uniquement un theme global personnalise sans variantes :
+cela peut retirer le choix Light/Dark du menu natif de Streamlit.
+
+Si le port est occupe, ajouter --server.port 8536 (ou un autre port libre).
+L'application utilise HTML/CSS et un composant Streamlit v2 integre a app.py.
+Aucun fichier de ressources ni telechargement d'image n'est necessaire.
+
+BIBLIOTHEQUES
+-------------
+streamlit : interface, formulaires, navigation, composant photo v2.
+numpy : statistiques et simulation reproductible.
+pandas : tableaux, import et export CSV/Excel.
+scipy : probabilite de depassement sous loi normale.
+plotly : graphiques interactifs, evolution et histogramme.
+Pillow : validation des photos, orientation EXIF, compression et schema fictif.
+reportlab : rapport PDF du batiment selectionne.
+openpyxl : lecture et ecriture des classeurs XLSX.
+tzdata : fuseau Europe/Paris sous Windows.
+sqlite3, json, pathlib et autres modules standards : inclus avec Python.
+
+PARCOURS SIMPLE
+---------------
+1. Observatoire : creer un dossier ou charger explicitement l'exemple fictif.
+   La vue annotee domine le tableau de bord. Cliquer sur un repere ouvre sa
+   fiche. Les dossiers de plusieurs batiments sont accessibles par vignettes,
+   avec leur derniere visite, prochaine echeance et nombre de reperes.
+2. Batiments et reperes : importer une photo de reference JPEG/PNG (max 5 Mo,
+   20 megapixels), cliquer sur le mur, puis enregistrer un repere et son nom.
+   Les positions X/Y sont en pourcentage depuis le coin superieur gauche.
+   On peut aussi saisir les positions manuellement. Sans photo, le mur affiche
+   est une illustration fictive, jamais la vue reelle du batiment.
+3. Carnet de visites : choisir batiment et repere ; saisir date, largeurs en mm,
+   incertitude-type, notes, photo optionnelle ; enregistrer. Repetitions au meme
+   point : 0,29 ; 0,30 ; 0,31. Le point-virgule separe les mesures.
+4. Pour corriger une visite, choisir Modifier, selectionner la date, enregistrer.
+   Il ne peut exister qu'une visite par date et par repere. Les suppressions
+   demandent confirmation. Les photos de visite restent conservees si on ne
+   les remplace pas ; une case permet leur retrait explicite.
+5. Comparateur photo : choisir deux visites photographiees, initiale puis
+   finale, dans les listes ou avec les boutons Avant/Apres des vignettes.
+   Glisser le curseur, zoomer de 1 a 4 fois ; deplacer la photo agrandie pour
+   inspecter un detail. Le zoom et le deplacement sont communs aux deux images.
+   Reinitialiser revient a la vue complete. Pas de recalage ou de mesure automatique.
+   Des cadrages differents rendent la comparaison visuelle moins fiable.
+6. Mesures et incertitudes : choisir deux visites puis lancer l'etude.
+7. Rapports : exporter PDF, CSV, XLSX ou JSON. Le JSON sauvegarde tout l'espace
+   selectionne, y compris toutes les photos ; le PDF est un resume par batiment
+   avec sa photo de reference annotee, ses courbes d'evolution, les premieres
+   et dernieres photos disponibles par repere, mesures, notes et echeances.
+   Les photos intermediaires restent dans le JSON ; les tirages Monte-Carlo
+   sont telechargeables separement en CSV dans Mesures et incertitudes.
+
+NOUVELLE INSPECTION ET FICHES FISSURES
+-----------------------------------
+Le bouton Nouvelle inspection propose cinq etapes :
+1. Choisir un batiment existant ou en creer un avec son emplacement.
+2. Ajouter une photo facultative. Pour un NOUVEAU batiment, elle devient aussi
+   sa vue de reference ; pour un dossier existant, la reference ne change pas.
+3. Choisir une fissure existante ou creer un repere : code, emplacement,
+   position par clic sur la reference ou saisie X/Y.
+4. Saisir la date, les repetitions en mm, u instrument, les observations et
+   eventuellement la prochaine visite.
+5. Relire le resume puis Enregistrer l'inspection. Aucun ajout au registre
+   avant cette derniere action. Etape precedente permet de corriger.
+Si une visite existe deja a cette date, la modifier depuis le Carnet de visites.
+Si un autre onglet modifie le registre pendant le brouillon, recommencer.
+
+Fiches fissures regroupe photo reperee, premiere et derniere mesures, variation,
+courbe, notes recentes, photos et planification. Les vignettes des reperes
+permettent de changer de fiche. Boutons vers carnet et comparateur operationnels.
+
+Statuts de SUIVI (aucun niveau de danger) :
+- Visite prevue : echeance aujourd'hui ou a venir, pas encore couverte.
+- Visite en retard : echeance passee sans releve a cette date ou apres.
+- Releve incomplet : aucune visite et pas d'echeance passee prioritaire.
+- Suivi a jour : au moins une visite, aucune echeance non couverte.
+Une visite a la date prevue ou apres couvre cette echeance. La date reste
+conservee dans le dossier, mais n'est plus annoncee comme visite a effectuer.
+Les alertes sont affichees dans l'application ; aucun rappel externe envoye.
+La case de planification permet de retirer une echeance, puis enregistrer.
+Le classeur Excel inclut la prochaine visite et le statut dans Reperes.
+
+IDENTITE VISUELLE
+----------------
+Direction atelier d'architecture : blanc chaud #F5F3EE, carbone #202827,
+vermillon #D94335, petrole #176B78 et panneaux petrole profond #164852.
+Mode sombre : fond #141A20, surfaces ardoise #1D262F, texte ivoire #F1EFE9,
+accents corail #FF9588 et bleu clair #80C6D0. Les photos gardent leurs couleurs.
+Menu sombre avec pictogramme, dossiers presentes par cartes photographiques,
+indicateurs compacts, panneau de suivi colore et courbes aux couleurs coherentes
+pour chaque repere, y compris lorsque l'on passe d'une vue d'ensemble a une fiche.
+Les couleurs des echeances ne classent jamais la gravite d'une fissure.
+Survols discrets des cartes et boutons ; preference de reduction des animations
+respectee. Aucun fichier de police distant, image externe ou service requis.
+Le CSS, les composants photo/galerie et leur logique sont integres dans app.py.
+Ne pas ajouter de quatrieme fichier de configuration au dossier livre.
+
+UTILISER LE NOUVEAU DESIGN
+-------------------------
+- Menu trois points en haut a droite : Light = clair, Dark = sombre,
+  System = suivre le systeme. Le navigateur conserve ce choix.
+  Les tableaux, formulaires, graphiques, legendes et fenetres photo s'adaptent.
+  Un petit composant synchronise les couleurs du navigateur avec les graphiques,
+  sans modifier une configuration globale ni les donnees du registre.
+- Agrandir dans la barre d'une photo ouvre une grande vue avec zoom. Fermer
+  la vue, la croix ou Echap revient a l'ecran precedent. Les positions restent
+  en pourcentage de la photo de reference, sans mesure automatique.
+- Cliquer sur une miniature de la Chronologie photographique ouvre la visite :
+  photo agrandie, date, moyenne, nombre de repetitions, incertitude et notes.
+  Le choix Date de la photo permet de parcourir les photos du meme repere.
+  La variation compare la mesure au releve precedent, meme si ce releve n'a
+  pas de photo ; la toute premiere visite affiche -- pour cette variation.
+- Cliquer sur un point du graphique de l'Observatoire ou d'une fiche affiche
+  les valeurs et les observations du releve. Le survol reste disponible.
+- Plusieurs batiments : cartes avec photo, nombre de reperes/visites,
+  derniere et prochaine visite ; Ouvrir le dossier change la vue active.
+  Les petites courbes des reperes gardent leur couleur dans les autres vues.
+- Les miniatures peuvent etre recadrees pour la presentation ; ouvrir la photo
+  permet de voir l'image complete. Aucune photo stockee n'est modifiee.
+
+EXEMPLE FICTIF ET TESTS MANUELS
+-----------------------------
+Bouton Charger l'exemple fictif : espace separe des donnees reelles.
+Il contient Pavillon Atelier, F-01 et F-02, trois visites par repere.
+Dates : J-30, J-15, aujourd'hui. Le mur est un SCHEMA FICTIF, pas une photo.
+F-01 : moyennes 0,30 / 0,45 / 0,60 mm ; delta +0,30 mm en 30 jours ;
+variation moyenne PASSEE +0,010 mm/j. F-02 : 0,20 / 0,21 / 0,20 mm ; delta 0.
+Chaque visite a trois repetitions espacees de 0,01 mm et u instrument=0,02 mm.
+Ecart-type s=0,01 mm ; u visite=0,02081666 mm ; u delta=0,02943920 mm.
+Intervalle normal approx. de delta : [0,2423 ; 0,3577] mm.
+Seuil d'etude delta>0,10 mm : probabilite theorique tres proche de 100 %.
+Ce n'est PAS une probabilite de danger ni d'effondrement.
+Monte-Carlo : 20 000 tirages, graine 42, ecart d'echantillonnage possible.
+Test de l'assistant : creer Maison test, passer sans photo, creer F-TEST,
+saisir 0,29 ; 0,30 ; 0,31 avec u=0,02, verifier puis enregistrer.
+Attendu : un second batiment, une fissure, une visite, moyenne 0,300 mm.
+Avant Enregistrer l'inspection : aucun nouveau batiment dans le registre.
+Test du calendrier : F-01 a une visite prevue dans 7 jours. Retirer la case
+de planification puis enregistrer : le statut devient Suivi a jour.
+Pour tester En retard, utiliser un repere dont la derniere visite precede
+l'echeance passee ; une visite plus recente couvre deja cette echeance.
+Tester mesures negatives, texte, NaN/inf, dates futures et dates dupliquees :
+elles doivent etre refusees sans enregistrement partiel.
+
+STATISTIQUES ET LIMITES
+----------------------
+Moyenne arithmetique des repetitions. Ecart-type d'echantillon (n-1).
+u visite = racine(u instrument^2 + s^2/n).
+u instrument est l'incertitude-type attribuee a la moyenne d'une visite ;
+elle n'est pas divisee a nouveau par racine(n).
+Une seule mesure : s non estimable, seul u instrument est utilise.
+Delta = moyenne finale - moyenne initiale.
+u delta = racine(u initiale^2 + u finale^2).
+Erreurs centrees, normales, independantes entre visites supposees.
+Barres et intervalle = moyenne +/- 1,96 u : approximation normale, pas une
+certification metrologique, peu de repetitions peuvent limiter sa pertinence.
+Pas de biais commun, temperature, mouvements structurels ou causes modelises.
+Les tirages de difference peuvent etre negatifs. Avec u=0, calcul deterministe.
+Pas d'extrapolation automatique du taux passe, ni seuil reglementaire invente.
+L'intervalle et la probabilite sont conditionnels aux hypotheses saisies.
+
+IMPORTS ET SAUVEGARDES
+---------------------
+CSV UTF-8 ou Excel XLSX, jusqu'a 2 Mo, 500 lignes, feuille 1 pour Excel.
+Colonnes obligatoires : date,mesures_mm,u_instrument_mm,notes
+Exemple (CSV virgule ; les repetitions restent entre points-virgules) :
+  date,mesures_mm,u_instrument_mm,notes
+  2026-10-01,0.29;0.30;0.31,0.02,Exemple fictif
+Utiliser le modele CSV genere dans l'application, avec une date adaptee.
+Import ajoute au repere selectionne ; doublons de dates refuses en bloc.
+Export CSV/Excel avec textes potentiellement interpretes comme formules
+neutralises par une apostrophe. Ne jamais importer un fichier non fiable.
+JSON : schema verifie, max 25 Mo ; la restauration AJOUTE des copies avec de
+nouveaux identifiants, sans supprimer les anciens batiments.
+Les sauvegardes 1.0 restent lisibles : le champ optionnel next_visit vaut
+texte vide s'il est absent. Le format reste schema=1. Une simple lecture
+n'ecrit pas de nouvelles donnees ; les nouvelles echeances sont enregistrees
+uniquement a la demande de l'utilisateur.
+Limites du registre : 20 batiments, 100 reperes, 2 000 visites, 100 repetitions
+par visite ; largeur de 0 a 100 mm ; u de 0 a 10 mm. Ce sont des limites
+logicielles d'etude, pas des seuils de securite.
+
+STOCKAGE ET CONFIDENTIALITE
+--------------------------
+En local, SQLite est enregistre HORS du dossier livre, par defaut :
+  ~/Documents/Codex/data/fissurescope/fissurescope.sqlite3
+Personnalisation par la variable d'environnement FISSURESCOPE_DATA_DIR.
+Ne pas exposer le registre a des visiteurs non autorises : sans comptes,
+ils partagent les memes donnees sur le meme serveur. Aucun secret dans le code.
+Les sauvegardes incluent les photos, a traiter comme des donnees personnelles.
+Les modifications simultanees de fenetres sont refusees si la revision a change.
+L'exemple fictif est uniquement en session et se recharge par le bouton ;
+le charger ne modifie pas SQLite. Les donnees reelles restent distinctes.
+
+GITHUB ET STREAMLIT COMMUNITY CLOUD
+---------------------------------
+Le dossier livre conserve exactement app.py, requirement.text et README.
+ATTENTION : Streamlit Community Cloud attend le nom STANDARD requirements.txt.
+Preparer une COPIE DE DEPLOIEMENT dans un AUTRE dossier avec :
+  app.py
+  requirements.txt (copie de requirement.text)
+  README
+Ne pas envoyer .venv, les donnees SQLite, les sauvegardes ou les photos privees.
+
+Dans le terminal VS Code du dossier de deploiement :
+  git init
+  git add .
+  git commit -m "Premiere version de FissureScope"
+  git branch -M main
+Creer un depot GitHub vide, par exemple fissurescope, puis :
+  git remote add origin https://github.com/VOTRE_COMPTE/fissurescope.git
+  git push -u origin main
+Si origin existe deja, verifier git remote -v avant de changer son URL.
+
+Sur Streamlit Community Cloud, creer une app, choisir le depot, la branche main
+et app.py comme fichier principal. Si Paste URL est utilise :
+  https://github.com/VOTRE_COMPTE/fissurescope/blob/main/app.py
+Selectionner une version Python disponible compatible (3.13 ou 3.14).
+Apres modification : git add . ; git commit -m "Mise a jour" ; git push
+Executer ces commandes l'une apres l'autre. Le Cloud reconstruit l'application.
+Le disque Cloud peut etre temporaire : SQLite n'est PAS une base en ligne
+durable. Pour un devoir public, utiliser du fictif et exporter souvent le JSON.
+Pour des donnees reelles partagees, une base externe et un acces controle sont
+necessaires ; ils ne sont pas fournis dans cette version pedagogique.
+
+VERIFICATIONS
+-------------
+Verification du 27/10/2026, sous Windows, Python 3.14 et Streamlit 1.65 :
+- installation des dependances effectuee ; bibliotheques deja presentes ;
+- 63 tests automatises reussis (43 existants et 20 ajoutes en version 2) :
+  calculs, donnees invalides, import CSV/Excel,
+  dates Excel natives, photos, PDF avec notes longues, JSON, copies ajoutees,
+  sauvegarde SQLite, refus d'une revision perimee et formulaires Streamlit ;
+  compatibilite des anciennes sauvegardes, echeances prevues/couvertes/en retard,
+  brouillon d'inspection atomique, retour aux etapes precedentes, refus des
+  doublons, enregistrement final, planification et rapport illustre ;
+- controles dans Edge aux largeurs 1440, 768, 390 et 320 pixels : navigation,
+  clic sur photo et enregistrement du repere, refus d'une mesure negative,
+  curseur avant/apres, calcul des incertitudes, telechargements, restauration
+  additive et separation de l'exemple et de l'espace reel ;
+- nouveaux parcours controles aux memes quatre largeurs : ouverture d'une
+  fiche depuis le repere sur la photo, retrait d'une echeance, zoom commun,
+  deplacement commun et reinitialisation, selection Avant/Apres par vignettes,
+  assistant complet avec photo et clic de position, dossiers multiples ;
+- PDF/CSV/Excel/JSON et CSV des 20 000 tirages ouverts et verifies ;
+- captures ordinateur et mobile inspectees ; correction du retrait du menu,
+  du contraste du bouton actif, de l'opacite des legendes et de l'en-tete ;
+- trois pages du PDF d'exemple rendues et controlees visuellement ;
+  sept pages avec notes longues et un dossier vide rendus/testes ;
+  position des caracteres controlee a l'interieur des marges des 11 pages ;
+- empreinte du registre reel verifiee : inchangee apres les essais.
+Refonte visuelle 2.1, verifications du meme jour :
+- les 63 tests ont ete relances avec succes apres integration du nouveau design ;
+- Edge, 1440/768/390/320 pixels : passage clair/sombre et retour au clair,
+  conservation du theme apres rechargement, textes du menu, graphiques,
+  tableaux et formulaires natifs, photos aux couleurs preservees ;
+- ouverture/fermeture des vues agrandies, clic d'une miniature, changement
+  de date dans la phototheque, valeurs et notes du releve affichees ;
+- clic sur un point de graphique : detail de la mesure affiche ;
+- parcours complet d'inspection recontrole sur ordinateur et telephone :
+  photo, position du repere, mesures, validation et enregistrement ;
+- contraste des boutons du panneau colore controle apres correction ;
+- restauration additive dans l'exemple fictif, cartes des deux dossiers,
+  ouverture du dossier choisi, exports PDF et JSON dans les deux themes ;
+- captures du design sur ordinateur et mobile inspectees ;
+- aucun changement de modele statistique ni du format des donnees.
+Les tests et captures sont places hors de ce dossier livre, dans work/.
+Le framework de tests a signale un refus Windows de nettoyage d'un dossier
+temporaire APRES le resultat OK ; les tests eux-memes ont tous reussi.
+Restent a verifier : votre deploiement Streamlit Cloud, les autres navigateurs,
+les photos de votre appareil et la pertinence de vos hypotheses de mesure.
+Ce bilan n'est ni un audit de securite ni une certification d'accessibilite.
